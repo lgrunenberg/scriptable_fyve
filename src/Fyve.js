@@ -4,7 +4,7 @@
 
 
 /*****************
-Version 1.0.0
+Version 1.0.1
 
 
 If you have problems or need help, please ask for support here:
@@ -222,23 +222,30 @@ async function getDataUsage() {
     let expirationDate = "";
 
     consumptions.forEach((tariffConsumption) => {
-        dataUsageBytes += tariffConsumption.consumptions[0].consumed * 1024 * 1024 * 1024;
-        dataInclusive += tariffConsumption.consumptions[0].max;
+        if (tariffConsumption.consumptions[0].unit === "GB") {
+            dataUsageBytes += tariffConsumption.consumptions[0].consumed * 1024 * 1024 * 1024;
+        dataInclusive += tariffConsumption.consumptions[0].max * 1024 * 1024 * 1024;
+        }
+        if (tariffConsumption.consumptions[0].unit === "MB") {
+            dataUsageBytes += tariffConsumption.consumptions[0].consumed * 1024 * 1024;
+            dataInclusive += tariffConsumption.consumptions[0].max * 1024 * 1024;
+        }
         if (tariffConsumption.type === "Tariff") {
             expirationDate = tariffConsumption.consumptions[0].expirationDate;
         }
     });
 
 
-    let dataUsagePercent = Math.round(dataUsageBytes / (dataInclusive * 1024 * 1024 * 1024) * 1000) / 10; // round to 1 decimal place
+    let dataUsagePercent = Math.round(dataUsageBytes / dataInclusive * 1000) / 10; // round to 1 decimal place
 
 
     m_Data.bytes = dataUsageBytes;
     m_Data.percent = dataUsagePercent;
-    m_Data.total = dataInclusive;
+    m_Data.total = dataInclusive / 1024 / 1024 / 1024;
+    m_Data.total = Math.round(m_Data.total * 10) / 10;
     m_Data.expirationDate = expirationDate;
 
-    console.log(m_Data.total + " GB");
+    console.log(m_Data.total);
     console.log(dataUsageBytes);
     console.log(dataUsagePercent);
     console.log(expirationDate);
